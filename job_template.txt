@@ -1,0 +1,127 @@
+#!/bin/bash
+#PBS -A zmcbeber
+#PBS -l nodes=1:ppn=24
+#PBS -l walltime=00:02:00
+#PBS -l select=1:node_type=rome,walltime=0:20:00
+
+## In den PBS-Header muss spaeter die HdM-Queue eingetragen werden.
+## Damit wird verhindert, dass Render-Jobs in die Testqueue
+## des HLRS uebergeben werden. Das betrifft alle Jobs, die weniger
+## als 30 Minuten rendern. Insgesamt stehen dann schneller mehr Ressourcen zur Verfuegung.
+
+WORKSPACE_DIR_NAME={WORKSPACE_DIR_NAME}
+ASS_ROOT_DIR_NAME={ASS_ROOT_DIR_NAME}
+ASS_FILE_NAME={ASS_FILE_NAME}
+ARNOLD_ROOT_PATH={ARNOLD_ROOT_PATH}
+ACES_PATH={ACES_PATH}
+
+"$ARNOLD_ROOT/bin/kick"
+
+set -x
+
+cd 
+
+
+if [ $? -ne 0 ]; then
+    echo "Error: can't change into $WORKSPACE_DIR_NAME"
+    echo " aborting..."
+    exit 1
+fi
+
+SEQUENZ_NAME={SEQUENZ_NAME}
+INPUT_DIR_NAME=$WORKSPACE_DIR_NAME/$ASS_ROOT_DIR_NAME
+OUTPUT_DIR_NAME=$WORKSPACE_DIR_NAME/$ASS_ROOT_DIR_NAME/Export
+LOG_DIR_NAME=$WORKSPACE_DIR_NAME/$ASS_ROOT_DIR_NAME/Logs
+STATUS_DIR_NAME=$WORKSPACE_DIR_NAME/$ASS_ROOT_DIR_NAME/$ASS_FILE_NAME.status
+
+STATUS_FILE=$STATUS_DIR_NAME/$ASS_FILE_NAME.status
+
+#root paths
+export ARNOLD_ROOT=$ARNOLD_ROOT_PATH
+export ASS_ROOT=$WORKSPACE_DIR_NAME/$ASS_ROOT_DIR_NAME
+
+# substitue and replace fullpaths in ass-file:
+export ARNOLD_PATHMAP="$WORKSPACE_DIR_NAME/$ASS_ROOT_DIR_NAME/pathmap.json"
+
+PATH=$PATH:$ARNOLD_ROOT/bin/:$ARNOLD_ROOT/bin
+export PATH
+
+#kick path
+export KICK="$ARNOLD_ROOT/bin/kick"
+
+#custom attributes (-dw for disable preview)
+export CUSTOM_ATTRIBUTES="-dw -dp -nokeypress -v 6"
+
+#ld library path
+export LD_LIBRARY_PATH="$ARNOLD_ROOT/bin"
+
+#pluging or shader path
+export SHADER="-l $ARNOLD_ROOT/shaders"
+
+#texture path
+export TEXTURES="-set options.texture_searchpath $WORKSPACE_DIR_NAME/$ASS_ROOT_DIR_NAME"
+
+#procedural path (path to ass files)
+export PROCEDURALS="-set options.procedural_searchpath $WORKSPACE_DIR_NAME/$ASS_ROOT_DIR_NAME"
+
+# OCIO Path
+export OCIOPATH="-set color_manager_ocio.config $ACES_PATH/config.ocio"
+
+#arnold license
+## 5053 ist standardmaeßig als Port festgelegt fuer den RLM Service.
+## Der Port kann in der License-File von Solidangle geaendert werden.
+## Nach einer aenderung muss der Lizenzserver neugestartet werden.
+## Je nach Lizenzpaket muessen unterschiedliche Variablen gesetzt werden.
+export solidangle_LICENSE=""2080@ca-lic.hdm-stuttgart.de""
+export RLM_LICENSE="(not set)"
+export ADSKFLEX_LICENSE_FILE="@ca-lic.hdm-stuttgart.de"
+export LM_LICENSE_FILE="(not set)"
+
+#saving path
+export SAVING_PATH="$OUTPUT_DIR_NAME/$ASS_FILE_NAME.exr"
+
+if [ ! -f $INPUT_DIR_NAME ]; then
+        echo " Error: File $INPUT_DIR_NAME does not exist. Abort..."
+        exit 1
+fi
+
+if [ ! -f $STATUS_FILE ]; then
+    echo " Error: Status file $STATUS_FILE is not available. This is a unknown situation Abort..."
+    exit 1
+fi
+
+## Status wird gecheckt und auf "running" gesetzt
+STATUS=`cat $STATUS_FILE`
+if [ "$STATUS" != "job_queued" ]; then
+    echo " ERROR $0  job status is not job_queued at Job start. Aborting"
+    # exit 1
+fi
+echo "running" > $STATUS_FILE
+
+
+if [ ! -d $OUTPUT_DIR_NAME ]; then
+    mkdir -p $OUTPUT_DIR_NAME
+    if [ $? -ne 0 ]; then
+        echo " Error: can't create Directory $OUTPUT_DIR_NAME. Abort..."
+        echo "ERROR   can't create directory for output" > $STATUS_FILE
+        exit 1
+    fi
+fi
+
+if [ ! -d $LOG_DIR_NAME ]; then
+    mkdir -p $LOG_DIR_NAME
+    if [ $? -ne 0 ]; then
+        echo " Error: can't create Directory $LOG_DIR_NAME. Abort..."
+        echo "ERROR   can't create directory for log" > $STATUS_FILE
+        exit 1
+    fi
+fi
+
+#start rendering
+$KICK -i $WORKSPACE_DIR_NAME/$ASS_ROOT_DIR_NAME/$ASS_FILE_NAME    \
+$CUSTOM_ATTRIBUTES $SHADER $TEXTURES $PROCEDURALS $OCIOPATH   \
+-set driver_exr.filename $SAVING_PATH    \
+-o $SAVING_PATH \
+-logfile  $LOG_DIR_NAME/shot_-sh002_ren_Rendering_v0005__js435_.ma_panda_layer.1001.ass.log
+
+exit

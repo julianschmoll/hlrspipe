@@ -7,7 +7,7 @@ import pymel.core as pc
 
 import hlrsutil
 
-version = 1.8
+version = 1.9
 
 
 def get_maya_win():
@@ -132,7 +132,14 @@ class HlrsWin(QMainWindow):
                     else:
                         text = checkbox.text()
                     number = "%04d" % (x,)
-                    hlrsutil.write_sh_script(Path(self.folder), f"{scene_name}_{text}.{number}")
+                    
+                    SEQUENZ_NAME = "StuProPanda/testcube-v01"
+                    WORKSPACE_DIR_NAME="/lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen"
+                    ASS_ROOT_DIR_NAME="/StuProPanda/sh0002/"
+                    ARNOLD_ROOT_PATH="/zhome/academic/HLRS/zmc/zmcbeber/Arnold_SDK-7.1.3.1_Linux"
+                    ACES_PATH="/lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/ocio/aces_1.2"
+    
+                    hlrsutil.write_job_file(Path(self.folder), f"{scene_name}_{text}.{number}", SEQUENZ_NAME, WORKSPACE_DIR_NAME, ASS_ROOT_DIR_NAME, ARNOLD_ROOT_PATH, ACES_PATH)
       
         self.statusBar.showMessage("Succesfully exported ASS Files",2000)
         print("Succesfully exported ASS Files")

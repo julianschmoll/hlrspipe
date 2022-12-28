@@ -59,9 +59,16 @@ class HlrsWin(QMainWindow):
        
         self.render_layer_lineedit = QLineEdit()
         self.render_layer_lineedit.setText(f"{self.render_layer_names}")
+                
+        self.scene_name_text = QLabel()
+        self.scene_name_text.setText("Scene Name:")
+
+        self.scene_name_lineedit = QLineEdit()
+        self.scene_name_lineedit.setText("StuProPanda/testcube_v05")
         
         self.resource_folder_lineedit = QLineEdit()
         self.resource_folder_lineedit.setText("panda/resources")
+        
         self.ok_btn = QPushButton("Export selected layers")
         self.statusBar = QStatusBar()
         self.setStatusBar(self.statusBar)
@@ -84,6 +91,11 @@ class HlrsWin(QMainWindow):
         res_hbox.addWidget(self.resource_folder_text)
         res_hbox.addWidget(self.resource_folder_lineedit, stretch = 1)
         vbox.addLayout(res_hbox)
+        
+        sname_hbox = QHBoxLayout()
+        sname_hbox.addWidget(self.scene_name_text)
+        sname_hbox.addWidget(self.scene_name_lineedit, stretch = 1)
+        vbox.addLayout(sname_hbox)
 
         vbox.addWidget(self.explain_arnold_text)
         
@@ -133,9 +145,9 @@ class HlrsWin(QMainWindow):
                         text = checkbox.text()
                     number = "%04d" % (x,)
                     
-                    SEQUENZ_NAME = "StuProPanda/testcube-v01"
-                    WORKSPACE_DIR_NAME="/lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen"
-                    ASS_ROOT_DIR_NAME="/StuProPanda/sh0002/"
+                    SEQUENZ_NAME = "StuProPanda/testcube_v05"
+                    ASS_ROOT_DIR_NAME=SEQUENZ_NAME
+                    WORKSPACE_DIR_NAME="/zhome/academic/HLRS/zmc/zmcbeber/Arnold_SDK-7.1.3.1_Linux/Job_dir"
                     ARNOLD_ROOT_PATH="/zhome/academic/HLRS/zmc/zmcbeber/Arnold_SDK-7.1.3.1_Linux"
                     ACES_PATH="/lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/ocio/aces_1.2"
     

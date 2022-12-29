@@ -1,6 +1,7 @@
 import pymel.core as pc
 import json
 import os
+import subprocess
 
 from pathlib import Path
 from shutil import copy
@@ -120,3 +121,4 @@ def write_job_file(filepath, name, SEQUENZ_NAME, WORKSPACE_DIR_NAME, ASS_ROOT_DI
     # Create a file to store the shell script
     with open(name, "w") as f:
         f.write(result)
+        subprocess.run(['sed', '-i', 's/\r$//', result])

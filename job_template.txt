@@ -78,7 +78,7 @@ export LM_LICENSE_FILE="(not set)"
 ## Je nach Lizenzpaket müssen unterschiedliche Variablen gesetzt werden.
 
 #saving path
-export SAVING_PATH="{WORKSPACE_DIR_NAME}/{SEQUENZ_NAME}/{ASS_FILE_NAME}.result/{ASS_FILE_NAME}.exr"
+export SAVING_PATH="{WORKSPACE_DIR_NAME}/{SEQUENZ_NAME}/{ASS_FILE_NAME}.exr"
 
 
    if [ ! -f ${INPUT_DIR_NAME} ]; then

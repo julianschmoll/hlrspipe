@@ -59,9 +59,19 @@ def collect_files(dest: str, image_suffix_list : list = None) -> list:
 
 
 def write_pathmap(folders, resources, filepath):
+    """Writes pathmap which can be read by arnold batch renderer
+    
+    Args:
+        folders: set of folders where ressources are in at the moment
+        resources: name of relative resource folder in pathmap
+        filepath: path where pathmap is written to
+        
+    Returns:
+        pathmap
+    
+    """
     ocio_config = pc.colorManagementPrefs(q=True, configFilePath=True)
     
-    # we need two folders up
     ocio_parent_folder = os.path.dirname(ocio_config)
     ocio_parent_folder = os.path.dirname(ocio_parent_folder)
     
@@ -74,9 +84,6 @@ def write_pathmap(folders, resources, filepath):
             normalized_folder = os.path.normpath(folder)
             normalized_folder = normalized_folder.replace("\\", "/")
             normalized_folders.append(normalized_folder)
-
-    # Print the normalized folders
-    print(normalized_folders)
     
     mapping = {
             str(normalized_folder): f"/{resources}"
@@ -95,6 +102,21 @@ def write_pathmap(folders, resources, filepath):
         
       
 def write_job_file(filepath, name, SEQUENZ_NAME, WORKSPACE_DIR_NAME, ASS_ROOT_DIR_NAME, ARNOLD_ROOT_PATH, ACES_PATH):
+    """Writes a job file which can be used to start the render at HLRS
+    
+    Args:
+        filepath: path where pathmap is written to
+        name: name of the job file
+        sequenz_name: name of the sequence 
+        WORKSPACE_DIR_NAME: name of workspace @HLRS
+        ASS_ROOT_DIR_NAME: root directory of ass files
+        ARNOLD_ROOT_PATH: path to arnold installation
+        ACES_PATH: path to ocio file
+        
+    Returns:
+        job file
+    
+    """
     ass_name = Path(name).name
     ass_name = f"{ass_name}.ass"
     name = f"{name}.Job"
@@ -102,12 +124,10 @@ def write_job_file(filepath, name, SEQUENZ_NAME, WORKSPACE_DIR_NAME, ASS_ROOT_DI
     script_dir = os.path.dirname(__file__)
     os.chdir(script_dir)
     
-    # Open the template file in read mode
+    # writes job file from template
     with open('job_template.txt', 'r') as f:
-        # Read the contents of the file into a variable
         template = f.read()
     
-    # Use the format method to fill in the placeholders
     result = template.format(WORKSPACE_DIR_NAME = WORKSPACE_DIR_NAME,
                              ASS_ROOT_DIR_NAME = ASS_ROOT_DIR_NAME,
                              ASS_FILE_NAME = ass_name,
@@ -115,10 +135,8 @@ def write_job_file(filepath, name, SEQUENZ_NAME, WORKSPACE_DIR_NAME, ASS_ROOT_DI
                              ACES_PATH = ACES_PATH, 
                              SEQUENZ_NAME = SEQUENZ_NAME)
 
-    # Change the current working directory to the desired folder
     os.chdir(filepath)
 
-    # Create a file to store the shell script
     with open(name, "w") as f:
         f.write(result)
         subprocess.run(['sed', '-i', 's/\r$//', result])

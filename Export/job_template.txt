@@ -132,8 +132,4 @@ ${KICK} -i {WORKSPACE_DIR_NAME}/{SEQUENZ_NAME}/{ASS_FILE_NAME}    \
    -set driver_exr.filename ${SAVING_PATH}    \
    -o ${SAVING_PATH} \
    -logfile  ${LOG_DIR_NAME}/{ASS_FILE_NAME}.log
-
-   #  now create, submit, ... next jobs
-   job_generator.sh  ${SEQUENZ_NAME}
-
 exit

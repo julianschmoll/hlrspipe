@@ -1,8 +1,5 @@
 #!/bin/bash
 
-## Ausführen des Skripts: sh job_generator <Sequenzname> 
-## <Sequenzname> muss ein Ordner im Sequenzenordner auf dem Workspace sein.
-
 if [ $# -ne 1 ]; then
   echo "ERROR $0: need .ass Directory"
   exit 1
@@ -30,51 +27,15 @@ if [ $? -ne 0 ]; then
     exit
 fi
 
-mkdir status
-STATUS_DIR_NAME=${JOB_DIR}/status
-
-for x in `ls -1 ${INPUT_DIR_NAME}`; do  
-    STATUS=unknown
-    for x in `ls -1 ${INPUT_DIR_NAME}`; do    
-        File=`$x.ass`
-        echo $File
-
-        if [ -f ${STATUS_DIR_NAME}/${File}.status ]; then
-            STATUS=`cat ${STATUS_DIR_NAME}/${File}.status`  
+for x in `ls -1 ${JOB_DIR}`; do    
+    qsub $x
+    if [ $? -eq 0 ]; then
+            echo "job ${x} queued"
         else
-            echo "new" > ${STATUS_DIR_NAME}/${File}.status
-            STATUS=new
-        fi
-
-        if [ "${STATUS}" = "new" ]; then
-            sed  -e "s#__ARNOLD_WORK_SPACE__#${ARNOLD_WORK_SPACE}#g"   \
-                -e "s#__SEQUENZ_NAME__#${SEQUENZ_NAME}#g"        \
-                -e "s#__INPUT_DIR_NAME__#${INPUT_DIR_NAME}#g"        \
-                -e "s#__OUTPUT_DIR_NAME__#${OUTPUT_DIR_NAME}#g"      \
-                -e "s#__LOG_DIR_NAME__#${LOG_DIR_NAME}#g"            \
-                -e "s#__STATUS_DIR_NAME__#${STATUS_DIR_NAME}#g"      \
-                -e "s#__STATUS_FILE_NAME__#${File}.status#g"            \
-                -e "s#__ARNOLD_INPUT_FILE__#${x}#g"                  \
-                -e "s#__ARNOLD_LOG_FILE__#${File}.log#g"             \
-                -e "s#__ARNOLD_OUTPUT_FILE__#${File}.exr#g"          \
-                -e "s#__ARNOLD_JOB_NAME__#${File}.Job#g"                 \
-            echo "job_generated" > ${STATUS_DIR_NAME}/${File}.status
-            STATUS=job_generated
-        fi
-
-        if [ "${STATUS}" = "job_generated" ]; then
-            qsub ${File}.Job
-            if [ $? -eq 0 ]; then
-                    echo "job_queued" > ${STATUS_DIR_NAME}/${File}.status
-                else
-                    echo " queue limit reached finish for now."
-                    exit 0 
-            fi
-        fi
-
-        done
-    done
-    sleep 3m 30s
+            echo " queue limit reached finish for now."
+            exit 0
+        fi 
+    fi
 done
 
 exit 0

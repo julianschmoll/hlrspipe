@@ -128,12 +128,8 @@ def write_job_file(filepath, name, SEQUENZ_NAME, WORKSPACE_DIR_NAME, ASS_ROOT_DI
     with open('job_template.txt', 'r') as f:
         template = f.read()
     
-    result = template.format(WORKSPACE_DIR_NAME = WORKSPACE_DIR_NAME,
-                             ASS_ROOT_DIR_NAME = ASS_ROOT_DIR_NAME,
-                             ASS_FILE_NAME = ass_name,
-                             ARNOLD_ROOT_PATH = ARNOLD_ROOT_PATH,
-                             ACES_PATH = ACES_PATH, 
-                             SEQUENZ_NAME = SEQUENZ_NAME)
+    result = template.format(ASS_FILE_NAME = ass_name, 
+                             SCENE_NAME = SEQUENZ_NAME)
 
     os.chdir(filepath)
 

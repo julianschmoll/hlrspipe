@@ -24,7 +24,7 @@ export LD_LIBRARY_PATH="$ARNOLD_PATH/bin"
 export SHADER="-l $ARNOLD_PATH/shaders"
 
 #ocio-path 
-export OCIOPATH="-set color_manager_ocio.config /lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/ocio/aces_1.2/config.ocio"
+export OCIO="-set color_manager_ocio.config /lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/ocio/aces_1.2/config.ocio"
 
 #arnold license
 export solidangle_LICENSE=""2080@ca-lic.hdm-stuttgart.de""
@@ -71,7 +71,7 @@ fi
 echo "Render started at $(date)" > $OUTPUT_DIR/render_status.txt
 
 # Start the render and save output to a log file
-$ARNOLD_PATH/bin/kick -nstdin -i $SCENE_FILE -o $OUTPUT_DIR/output.exr -dp -dw -v 5 &> $OUTPUT_DIR/render.log
+$ARNOLD_PATH/bin/kick -nstdin $OCIO -i $SCENE_FILE -o $OUTPUT_DIR/output.exr -dp -dw -v 5 &> $OUTPUT_DIR/render.log
 
 # Append the render completion date/time to the status file
 echo "Render completed at $(date)" >> $OUTPUT_DIR/render_status.txt

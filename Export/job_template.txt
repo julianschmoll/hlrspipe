@@ -71,7 +71,7 @@ fi
 echo "Render started at $(date)" > $OUTPUT_DIR/render_status_{ASS_FILE_NAME}.txt
 
 # Start the render and save output to a log file
-$ARNOLD_PATH/bin/kick -nstdin $OCIO -i $SCENE_FILE -o $OUTPUT_DIR/output.exr -dp -dw -v 5 &> $OUTPUT_DIR/render_{ASS_FILE_NAME}.log
+$ARNOLD_PATH/bin/kick -nstdin $OCIO -i $SCENE_FILE -o $OUTPUT_DIR/{ASS_FILE_NAME}_output.exr -dp -dw -v 5 &> $OUTPUT_DIR/render_{ASS_FILE_NAME}.log
 
 # Append the render completion date/time to the status file
 echo "Render completed at $(date)" >> $OUTPUT_DIR/render_status_{ASS_FILE_NAME}.txt

@@ -2,6 +2,10 @@
 
 folder=$1
 
+for file in $folder/*.job; do
+    dos2unix $file
+done
+
 while [[ $(qstat | grep -c $folder) -ne 0 ]]; do
   for file in $folder/*.job; do
     jobname=$(basename $file .job)

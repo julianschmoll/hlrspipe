@@ -44,7 +44,7 @@ SCENE_FILE=/lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/se
 OUTPUT_DIR=/lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen/out
 
 # Check if the job has already started
-if [ -f "$OUTPUT_DIR/render_status_{SCENE_FILE}" ]; then
+if [ -f "$OUTPUT_DIR/render_status_{ASS_FILE_NAME}" ]; then
     echo "Render already started, exiting..."
     exit 0
 fi
@@ -68,10 +68,10 @@ if [ ! -d "$ARNOLD_SHADER_PATH" ]; then
 fi
 
 # Create a status file with the current date/time
-echo "Render started at $(date)" > $OUTPUT_DIR/render_status_{SCENE_FILE}.txt
+echo "Render started at $(date)" > $OUTPUT_DIR/render_status_{ASS_FILE_NAME}.txt
 
 # Start the render and save output to a log file
-$ARNOLD_PATH/bin/kick -nstdin $OCIO -i $SCENE_FILE -o $OUTPUT_DIR/output.exr -dp -dw -v 5 &> $OUTPUT_DIR/render_{SCENE_FILE}.log
+$ARNOLD_PATH/bin/kick -nstdin $OCIO -i $SCENE_FILE -o $OUTPUT_DIR/output.exr -dp -dw -v 5 &> $OUTPUT_DIR/render_{ASS_FILE_NAME}.log
 
 # Append the render completion date/time to the status file
-echo "Render completed at $(date)" >> $OUTPUT_DIR/render_status_{SCENE_FILE}.txt
+echo "Render completed at $(date)" >> $OUTPUT_DIR/render_status_{ASS_FILE_NAME}.txt

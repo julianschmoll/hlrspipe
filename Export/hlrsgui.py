@@ -7,7 +7,7 @@ import pymel.core as pc
 
 import hlrsutil
 
-version = 2.0
+version = 2.1
 
 
 def get_maya_win():
@@ -145,7 +145,7 @@ class HlrsWin(QMainWindow):
                         text = checkbox.text()
                     number = "%04d" % (x,)
                     
-                    SEQUENZ_NAME = "StuProPanda/testcube_v05"
+                    SEQUENZ_NAME = self.scene_name_lineedit.text()
                     ASS_ROOT_DIR_NAME=SEQUENZ_NAME
                     WORKSPACE_DIR_NAME="/zhome/academic/HLRS/zmc/zmcbeber/Arnold_SDK-7.1.3.1_Linux/Job_dir"
                     ARNOLD_ROOT_PATH="/zhome/academic/HLRS/zmc/zmcbeber/Arnold_SDK-7.1.3.1_Linux"

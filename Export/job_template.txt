@@ -5,52 +5,23 @@
 # PBS -l walltime=00:02:00
 #PBS -l select=1:node_type=rome,walltime=0:20:00
 
-## In den PBS-Header muss später die HdM-Queue eingetragen werden.
-## Damit wird verhindert, dass Render-Jobs in die Testqueue
-## des HLRS übergeben werden. Das betrifft alle Jobs, die weniger
-## als 30 Minuten rendern. Insgesamt stehen dann schneller mehr Ressourcen zur Verfügung.
+# Set the path to the Arnold installation
+export ARNOLD_PATH=/zhome/academic/HLRS/zmc/zmcbeber/Arnold_SDK-7.1.3.1_Linux
 
-set -x
+# Set the path to the Arnold plugins
+export ARNOLD_PLUGIN_PATH=$ARNOLD_PATH/shaders
 
-   cd /lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen
+# Set the path to the Arnold shaders
+export ARNOLD_SHADER_PATH=$ARNOLD_PLUGIN_PATH
 
-   if [ $? -ne 0 ]; then
-     echo "Error: can't change into /lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen Directory!!!"
-     echo " aborting..."
-     exit 1
-   fi
-
-   SEQUENZ_NAME={SCENE_NAME}
-   DIRECTORY_NAME=/lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen/{SCENE_NAME}/
-   STATUS_FILE=/lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen/{SCENE_NAME}/{ASS_FILE_NAME}.status
-
-#root paths
-export ARNOLD_ROOT="/zhome/academic/HLRS/zmc/zmcbeber/Arnold_SDK-7.1.3.1_Linux"
-export ASS_ROOT="/lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1"
-
-# substitue and replace fullpaths in ass-file:
-export ARNOLD_PATHMAP="/lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen/{SCENE_NAME}/pathmap.json"
-
-PATH=$PATH:/zhome/academic/HLRS/zmc/zmcbeber/Arnold_SDK-7.1.3.1_Linux/bin/:/zhome/academic/HLRS/zmc/zmcbeber/Arnold_SDK-7.1.3.1_Linux/bin
+PATH=$PATH:$ARNOLD_PATH/bin/:$ARNOLD_PATH/bin
 export PATH
 
-#kick path
-export KICK="/zhome/academic/HLRS/zmc/zmcbeber/Arnold_SDK-7.1.3.1_Linux/bin/kick"
-
-#custom attributes (-dw for disable preview)
-export CUSTOM_ATTRIBUTES="-dw -dp -nokeypress -v 6"
-
 #ld library path
-export LD_LIBRARY_PATH="/zhome/academic/HLRS/zmc/zmcbeber/Arnold_SDK-7.1.3.1_Linux/bin"
+export LD_LIBRARY_PATH="$ARNOLD_PATH/bin"
 
 #pluging or shader path
-export SHADER="-l /zhome/academic/HLRS/zmc/zmcbeber/Arnold_SDK-7.1.3.1_Linux/shaders"
-
-#texture path
-export TEXTURES="-set options.texture_searchpath /lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen/{SCENE_NAME}"
-
-#procedural path (path to ass files)
-export PROCEDURALS="-set options.procedural_searchpath /lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen/{SCENE_NAME}"
+export SHADER="-l $ARNOLD_PATH/shaders"
 
 #ocio-path 
 export OCIOPATH="-set color_manager_ocio.config /lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/ocio/aces_1.2/config.ocio"
@@ -66,51 +37,41 @@ export LM_LICENSE_FILE="(not set)"
 ## Nach einer Änderung muss der Lizenzserver neugestartet werden.
 ## Je nach Lizenzpaket müssen unterschiedliche Variablen gesetzt werden.
 
-#saving path
-export SAVING_PATH="/lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen/{SCENE_NAME}/result/{ASS_FILE_NAME}.exr"
+# Set the path to the scene file
+SCENE_FILE=/lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen/{SCENE_NAME}/{ASS_FILE_NAME}
 
+# Set the output directory
+OUTPUT_DIR=/lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen/out
 
-   if [ ! -f /lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen/{SCENE_NAME}/ ]; then
-        echo " Error: File /lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen/{SCENE_NAME}/ does not exist. Abort..."
-        exit 1
-   fi
+# Check if the job has already started
+if [ -f "$OUTPUT_DIR/render_status.txt" ]; then
+    echo "Render already started, exiting..."
+    exit 0
+fi
 
-   if [ ! -f /lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen/{SCENE_NAME}/{ASS_FILE_NAME}.status ]; then
-     echo " Error: Status file /lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen/{SCENE_NAME}/{ASS_FILE_NAME}.status is not available. This is a unknown situation Abort..."
-     exit 1
-   fi
+# Create output directory if it doesn't exist
+if [ ! -d "$OUTPUT_DIR" ]; then
+  mkdir -p $OUTPUT_DIR
+fi
 
-## Status wird gecheckt und auf "running" gesetzt, um zu verhindern,
-## dass Jobs mehrfach abgeschickt werden können.
-   STATUS=`cat /lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen/{SCENE_NAME}/{ASS_FILE_NAME}.status`
-   if [ "$STATUS" != "job_queued" ]; then
-      echo " ERROR $0  job status is not job_queued at Job start. Aborting"
-      # exit 1
-   fi
-   echo "running" > /lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen/{SCENE_NAME}/{ASS_FILE_NAME}.status
+# Set the number of threads to use
+export AI_THREADS=24
 
+# Create the plugin directory if it doesn't exist
+if [ ! -d "$ARNOLD_PLUGIN_PATH" ]; then
+  mkdir -p $ARNOLD_PLUGIN_PATH
+fi
 
-   if [ ! -d /lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen/{SCENE_NAME}/ ]; then
-      mkdir -p /lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen/{SCENE_NAME}/
-      if [ $? -ne 0 ]; then
-        echo " Error: can't create Directory /lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen/{SCENE_NAME}/. Abort..."
-        echo "ERROR   can't create directory for output" > /lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen/{SCENE_NAME}/{ASS_FILE_NAME}.status
-        exit 1
-      fi
-   fi
+# Create the shaders directory if it doesn't exist
+if [ ! -d "$ARNOLD_SHADER_PATH" ]; then
+  mkdir -p $ARNOLD_SHADER_PATH
+fi
 
-   if [ ! -d /lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen/{SCENE_NAME}/ ]; then
-      mkdir -p /lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen/{SCENE_NAME}/
-      if [ $? -ne 0 ]; then
-        echo " Error: can't create Directory /lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen/{SCENE_NAME}/. Abort..."
-        echo "ERROR   can't create directory for log" > /lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen/{SCENE_NAME}/{ASS_FILE_NAME}.status
-        exit 1
-      fi
-   fi
+# Create a status file with the current date/time
+echo "Render started at $(date)" > $OUTPUT_DIR/render_status.txt
 
-#start rendering
-/zhome/academic/HLRS/zmc/zmcbeber/Arnold_SDK-7.1.3.1_Linux/bin/kick -i /lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen/{SCENE_NAME}/{ASS_FILE_NAME}    \
-   -set driver_exr.filename /lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen/{SCENE_NAME}/result/{ASS_FILE_NAME}.exr    \
-   -o /lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen/{SCENE_NAME}/result/{ASS_FILE_NAME}.exr \
-   -logfile /lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen/{SCENE_NAME}/{ASS_FILE_NAME}.log
-exit
+# Start the render and save output to a log file
+$ARNOLD_PATH/bin/kick -nstdin -i $SCENE_FILE -o $OUTPUT_DIR/output.exr -dp -dw -v 5 &> $OUTPUT_DIR/render.log
+
+# Append the render completion date/time to the status file
+echo "Render completed at $(date)" >> $OUTPUT_DIR/render_status.txt

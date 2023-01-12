@@ -132,7 +132,10 @@ def write_job_file(filepath, name, SEQUENZ_NAME, WORKSPACE_DIR_NAME, ASS_ROOT_DI
                              SCENE_NAME = SEQUENZ_NAME)
 
     os.chdir(filepath)
+    
+    windows_line_ending = r"\r\n"
+    linux_line_ending = r"\n"
+    result = result.replace(windows_line_ending, linux_line_ending)
 
     with open(name, "w") as f:
         f.write(result)
-        subprocess.run(['sed', '-i', 's/\r$//', result])

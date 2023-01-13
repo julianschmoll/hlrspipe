@@ -101,17 +101,14 @@ def write_pathmap(folders, resources, filepath):
         json.dump(pathmap, file, indent=4)
         
       
-def write_job_file(filepath, name, SEQUENZ_NAME, WORKSPACE_DIR_NAME, ASS_ROOT_DIR_NAME, ARNOLD_ROOT_PATH, ACES_PATH):
+def write_job_file(filepath, name, SEQUENZ_NAME, out_dir_name):
     """Writes a job file which can be used to start the render at HLRS
     
     Args:
         filepath: path where pathmap is written to
         name: name of the job file
         sequenz_name: name of the sequence 
-        WORKSPACE_DIR_NAME: name of workspace @HLRS
-        ASS_ROOT_DIR_NAME: root directory of ass files
-        ARNOLD_ROOT_PATH: path to arnold installation
-        ACES_PATH: path to ocio file
+        out_dir_name: name of output directory at hlrs
         
     Returns:
         job file
@@ -129,7 +126,8 @@ def write_job_file(filepath, name, SEQUENZ_NAME, WORKSPACE_DIR_NAME, ASS_ROOT_DI
         template = f.read()
     
     result = template.format(ASS_FILE_NAME = ass_name, 
-                             SCENE_NAME = SEQUENZ_NAME)
+                             SCENE_NAME = SEQUENZ_NAME,
+                             OUT_DIR_NAME = out_dir_name)
 
     os.chdir(filepath)
     

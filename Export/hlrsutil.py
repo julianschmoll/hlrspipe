@@ -114,9 +114,10 @@ def write_job_file(filepath, name, SEQUENZ_NAME, out_dir_name):
         job file
     
     """
+    
+    folder = Path(name).parent.absolute()
     ass_name = Path(name).name
     ass_name = f"{ass_name}.ass"
-    name = f"{name}.Job"
     
     script_dir = os.path.dirname(__file__)
     os.chdir(script_dir)
@@ -128,12 +129,12 @@ def write_job_file(filepath, name, SEQUENZ_NAME, out_dir_name):
     result = template.format(ASS_FILE_NAME = ass_name, 
                              SCENE_NAME = SEQUENZ_NAME,
                              OUT_DIR_NAME = out_dir_name)
-
-    os.chdir(filepath)
     
-    windows_line_ending = r"\r\n"
-    linux_line_ending = r"\n"
-    result = result.replace(windows_line_ending, linux_line_ending)
-
-    with open(name, "w") as f:
-        f.write(result)
+    subfolder = "job"
+    subfolder_path = os.path.join(folder, subfolder)
+    os.makedirs(subfolder_path, exist_ok=True)
+    
+    outFileName=f"{subfolder_path}/{ass_name}.Job"
+    outFile=open(outFileName, "w")
+    outFile.write(result)
+    outFile.close()

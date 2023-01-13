@@ -131,13 +131,19 @@ class HlrsWin(QMainWindow):
 
     def _copy_files(self):
         resources = self.resource_folder_lineedit.text() or "resources"
-        self.folder = self.dir_lineedit.text()
+        self.folder = Path(self.dir_lineedit.text()) 
+        self.folder.mkdir(parents=True, exist_ok=True)
         
-        resource_folder = Path(self.folder) / resources
+        seq_folder = Path(self.dir_lineedit.text()) / "seq"
+        seq_folder.mkdir(parents=True, exist_ok=True)
+        
+        resource_folder = Path(self.folder) / "seq" / resources
         resource_folder.mkdir(parents=True, exist_ok=True)
         folders = hlrsutil.collect_files(resource_folder)
-        hlrsutil.write_pathmap(folders, resources, Path(self.folder))
+        hlrsutil.write_pathmap(folders, resources, Path(seq_folder))
+        
         scene_name = Path(self.folder) / pc.sceneName().name
+        seq_scene_name = Path(seq_folder) / pc.sceneName().name
 
         rs = pc.PyNode("defaultRenderGlobals")
         startframe = rs.getAttr("startFrame")
@@ -148,7 +154,7 @@ class HlrsWin(QMainWindow):
             if checkbox.isChecked():
                 print(f"# Exporting {checkbox.text()}...")
                 pc.editRenderLayerGlobals( currentRenderLayer=checkbox.text())
-                pc.other.arnoldExportAss(f=f"{scene_name}_<RenderLayer>.ass", startFrame = startframe, endFrame = endframe, preserveReferences=True)
+                pc.other.arnoldExportAss(f=f"{seq_scene_name}_<RenderLayer>.ass", startFrame = startframe, endFrame = endframe, preserveReferences=True)
                 print(f"Succesfully exported {checkbox.text()}")
                 for x in range(int(startframe), int(endframe)):
                     if f"{checkbox.text()}" == "defaultRenderLayer":
@@ -159,11 +165,8 @@ class HlrsWin(QMainWindow):
                     
                     SEQUENZ_NAME = self.scene_name_lineedit.text()
                     out_dir_name = self.out_dir_name_lineedit.text()
-    
-                    subfolder = "job"
-                    subfolder_path = os.path.join(Path(self.folder), subfolder)
-                    os.makedirs(subfolder_path, exist_ok=True)
-                    hlrsutil.write_job_file(subfolder_path, f"{scene_name}_{text}.{number}", SEQUENZ_NAME, out_dir_name)
+                    
+                    hlrsutil.write_job_file(Path(self.folder), f"{scene_name}_{text}.{number}", SEQUENZ_NAME, out_dir_name)
       
         self.statusBar.showMessage("Succesfully exported ASS Files",2000)
         print("Succesfully exported ASS Files")

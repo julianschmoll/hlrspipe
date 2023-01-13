@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from PySide2.QtWidgets import *
@@ -7,7 +8,7 @@ import pymel.core as pc
 
 import hlrsutil
 
-version = 2.1
+version = 2.3
 
 
 def get_maya_win():
@@ -63,8 +64,15 @@ class HlrsWin(QMainWindow):
         self.scene_name_text = QLabel()
         self.scene_name_text.setText("Scene Name:")
 
+        scenename = pc.sceneName().name
         self.scene_name_lineedit = QLineEdit()
-        self.scene_name_lineedit.setText("StuProPanda/testcube_v05")
+        self.scene_name_lineedit.setText(f"StuProPanda/{scenename}")
+        
+        self.out_dir_name_text = QLabel()
+        self.out_dir_name_text.setText("Output Directory:")
+
+        self.out_dir_name_lineedit = QLineEdit()
+        self.out_dir_name_lineedit.setText("StuProPanda/")
         
         self.resource_folder_lineedit = QLineEdit()
         self.resource_folder_lineedit.setText("panda/resources")
@@ -96,6 +104,11 @@ class HlrsWin(QMainWindow):
         sname_hbox.addWidget(self.scene_name_text)
         sname_hbox.addWidget(self.scene_name_lineedit, stretch = 1)
         vbox.addLayout(sname_hbox)
+        
+        o_dir_name_hbox = QHBoxLayout()
+        o_dir_name_hbox.addWidget(self.out_dir_name_text)
+        o_dir_name_hbox.addWidget(self.out_dir_name_lineedit, stretch = 1)
+        vbox.addLayout(o_dir_name_hbox)
 
         vbox.addWidget(self.explain_arnold_text)
         
@@ -118,7 +131,6 @@ class HlrsWin(QMainWindow):
 
     def _copy_files(self):
         resources = self.resource_folder_lineedit.text() or "resources"
-        filename = pc.sceneName().name
         self.folder = self.dir_lineedit.text()
         
         resource_folder = Path(self.folder) / resources
@@ -146,12 +158,12 @@ class HlrsWin(QMainWindow):
                     number = "%04d" % (x,)
                     
                     SEQUENZ_NAME = self.scene_name_lineedit.text()
-                    ASS_ROOT_DIR_NAME=SEQUENZ_NAME
-                    WORKSPACE_DIR_NAME="/zhome/academic/HLRS/zmc/zmcbeber/Arnold_SDK-7.1.3.1_Linux/Job_dir"
-                    ARNOLD_ROOT_PATH="/zhome/academic/HLRS/zmc/zmcbeber/Arnold_SDK-7.1.3.1_Linux"
-                    ACES_PATH="/lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/ocio/aces_1.2"
+                    out_dir_name = self.out_dir_name_lineedit.text()
     
-                    hlrsutil.write_job_file(Path(self.folder), f"{scene_name}_{text}.{number}", SEQUENZ_NAME, WORKSPACE_DIR_NAME, ASS_ROOT_DIR_NAME, ARNOLD_ROOT_PATH, ACES_PATH)
+                    subfolder = "job"
+                    subfolder_path = os.path.join(Path(self.folder), subfolder)
+                    os.makedirs(subfolder_path, exist_ok=True)
+                    hlrsutil.write_job_file(subfolder_path, f"{scene_name}_{text}.{number}", SEQUENZ_NAME, out_dir_name)
       
         self.statusBar.showMessage("Succesfully exported ASS Files",2000)
         print("Succesfully exported ASS Files")

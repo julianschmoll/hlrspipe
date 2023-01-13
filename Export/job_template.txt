@@ -40,18 +40,28 @@ export LM_LICENSE_FILE="(not set)"
 # Set the path to the scene file
 SCENE_FILE=/lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen/{SCENE_NAME}/{ASS_FILE_NAME}
 
-# Set the output directory
-OUTPUT_DIR=/lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen/out
+#texture path
+export TEXTURES="-set options.texture_searchpath /lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen/{SCENE_NAME}"
 
-# Check if the job has already started
-if [ -f "$OUTPUT_DIR/render_status_{ASS_FILE_NAME}" ]; then
-    echo "Render already started, exiting..."
-    exit 0
-fi
+#procedural path (path to ass files)
+export PROCEDURALS="-set options.procedural_searchpath /lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen/{SCENE_NAME}"
+
+# Set the output directory
+OUTPUT_DIR=/lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen/{OUT_DIR_NAME}
+
+export ARNOLD_PATHMAP=/lustre/hpe/ws10/ws10.1/ws/zmcbeber-workspace1/zmcbeber-workspace1/sequenzen/{SCENE_NAME}/pathmap.json
+
+# Set the log directory
+LOG_DIR=$OUTPUT_DIR/logs
 
 # Create output directory if it doesn't exist
 if [ ! -d "$OUTPUT_DIR" ]; then
   mkdir -p $OUTPUT_DIR
+fi
+
+# Create log directory if it doesn't exist
+if [ ! -d "$LOG_DIR" ]; then
+  mkdir -p $LOG_DIR
 fi
 
 # Set the number of threads to use
@@ -67,11 +77,5 @@ if [ ! -d "$ARNOLD_SHADER_PATH" ]; then
   mkdir -p $ARNOLD_SHADER_PATH
 fi
 
-# Create a status file with the current date/time
-echo "Render started at $(date)" > $OUTPUT_DIR/render_status_{ASS_FILE_NAME}.txt
-
-# Start the render and save output to a log file
-$ARNOLD_PATH/bin/kick -nstdin $OCIO -i $SCENE_FILE -o $OUTPUT_DIR/{ASS_FILE_NAME}_output.exr -dp -dw -v 5 &> $OUTPUT_DIR/render_{ASS_FILE_NAME}.log
-
-# Append the render completion date/time to the status file
-echo "Render completed at $(date)" >> $OUTPUT_DIR/render_status_{ASS_FILE_NAME}.txt
+#start rendering
+$ARNOLD_PATH/bin/kick -nstdin -i $SCENE_FILE $SHADER $TEXTURES $PROCEDURALS $OCIO -o $OUTPUT_DIR/render_{ASS_FILE_NAME}.exr -dp -dw -v 5 &> $LOG_DIR/render_{ASS_FILE_NAME}.log

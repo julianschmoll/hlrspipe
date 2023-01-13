@@ -64,9 +64,6 @@ if [ ! -d "$LOG_DIR" ]; then
   mkdir -p $LOG_DIR
 fi
 
-# Set the number of threads to use
-export AI_THREADS=24
-
 # Create the plugin directory if it doesn't exist
 if [ ! -d "$ARNOLD_PLUGIN_PATH" ]; then
   mkdir -p $ARNOLD_PLUGIN_PATH

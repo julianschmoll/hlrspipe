@@ -8,7 +8,7 @@ import pymel.core as pc
 
 import hlrsutil
 
-version = 2.3
+version = 2.4
 
 
 def get_maya_win():
@@ -161,6 +161,8 @@ class HlrsWin(QMainWindow):
                         text = "masterLayer"
                     else:
                         text = checkbox.text()
+                        rl_parts = str(text).split("_")
+                        text = rl_parts[1]
                     number = "%04d" % (x,)
                     
                     SEQUENZ_NAME = self.scene_name_lineedit.text()

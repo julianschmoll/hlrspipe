@@ -2,10 +2,6 @@
 
 folder=$1
 
-for file in $folder/*.Job; do
-    dos2unix $file
-done
-
 status_file="$folder/status.txt"
 touch $status_file
 
@@ -17,6 +13,7 @@ while true; do
             echo "Job $jobname already submitted."
         else
             all_submitted=false
+            dos2unix $file
             echo "Submitting job $jobname."
             qsub $file
             if [ $? -eq 0 ]; then

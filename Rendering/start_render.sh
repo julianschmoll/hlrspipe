@@ -21,6 +21,7 @@ while true; do
                 echo $jobname >> $status_file
             else
                 echo " queue limit reached finish for now."
+                break
             fi 
         fi
     done

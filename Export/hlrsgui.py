@@ -8,7 +8,7 @@ import pymel.core as pc
 
 import hlrsutil
 
-version = 2.4
+version = 2.5
 
 
 def get_maya_win():
@@ -162,7 +162,7 @@ class HlrsWin(QMainWindow):
                     else:
                         text = checkbox.text()
                         rl_parts = str(text).split("_")
-                        text = rl_parts[1]
+                        text = "_".join(rl_parts[1:])
                     number = "%04d" % (x,)
                     
                     SEQUENZ_NAME = self.scene_name_lineedit.text()

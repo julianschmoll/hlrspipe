@@ -5,7 +5,7 @@ folder=$1
 status_file="$folder/status.txt"
 touch $status_file
 
-while true; do
+while "$all_submitted" = false; do
     all_submitted=true
     for file in $folder/*.Job; do
         jobname=$(basename $file .Job)
@@ -25,10 +25,6 @@ while true; do
             fi 
         fi
     done
-    if [ "$all_submitted" = true ]; then
-        echo "All jobs in $folder have been submitted"
-        break
-    else
-        sleep 180 
-    fi
+    sleep 180
 done
+echo "All jobs in $folder have been submitted"

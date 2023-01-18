@@ -8,7 +8,7 @@ import pymel.core as pc
 
 import hlrsutil
 
-version = 2.5
+version = 2.6
 
 
 def get_maya_win():

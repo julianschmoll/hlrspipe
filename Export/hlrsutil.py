@@ -1,10 +1,20 @@
 import pymel.core as pc
 import json
 import os
-import subprocess
+import shutil
+import time
 
+from concurrent import futures
 from pathlib import Path
-from shutil import copy
+
+
+def copy_worker(src_and_target: tuple):
+    source, target = src_and_target
+    print(f"{source} - Copying")
+    try:
+        shutil.copy2(source, target)
+    except (FileNotFoundError, PermissionError) as e:
+        print(f"{source} - ERROR: {e}")
 
 
 def collect_files(dest: str, image_suffix_list : list = None) -> list:
@@ -44,16 +54,18 @@ def collect_files(dest: str, image_suffix_list : list = None) -> list:
         filepath = Path(standin.dso.get())
         filepaths.append(filepath)
         folders.add(filepath.parent)
-        
-    for filepath in set(filepaths):
-        src = Path(filepath)
-        try:
-            copy(src, dest / src.name)
-            print(f"Copying {src}")
-        except FileNotFoundError:
-            print(f"File {filepath} not found") 
-        except PermissionError:
-            print(f"No permission for {filepath}")
+    
+    print("starting copy threads ...")
+    with futures.ThreadPoolExecutor() as exec:
+        jobs = [
+            exec.submit(copy_worker, (Path(src), dest / Path(src).name))
+            for src in set(filepaths)
+        ]
+        for job in futures.as_completed(jobs):
+            # Nothing to do here really, we just don't want to use
+            # futures.wait() since that could freeze Maya.
+            time.sleep(1)
+            pass
 
     return folders
 
